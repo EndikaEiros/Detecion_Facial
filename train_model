@@ -1,4 +1,5 @@
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import  train_test_split
 from sklearn.metrics import classification_report
@@ -10,10 +11,10 @@ import pickle
 import numpy as np
 
 
-def save_model(knn):
+def save_model(model, name):
 
-    with open("models/knn.model", "wb") as model:
-        pickle.dump(knn, model)
+    with open(f"models/{name}.model", "wb") as f:
+        pickle.dump(model, f)
 
 
 
@@ -69,8 +70,14 @@ data = data.reshape(dataset_size,-1)
 (trainX, testX, trainY, testY) = train_test_split(data, lables, test_size= 0.25, random_state=42)
 
 model = KNeighborsClassifier(n_neighbors=3, n_jobs=-1)
+save_model(model, "knn")
+
+# model = DecisionTreeClassifier(max_depth=200000)
+# save_model(model, "decisiontree")
+
+# Train
 model.fit(trainX, trainY)
-save_model(model)
+
 
 image = cv2.imread("./guess/endika.jpg")
 image = cv2.resize(image, (32, 32), interpolation=cv2.INTER_AREA).reshape(1, -1)
