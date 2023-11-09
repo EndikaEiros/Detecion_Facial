@@ -21,7 +21,7 @@ def load_model():
     :return Modelo entrenado 
 
     """
-    with open("models/knn.model", "rb") as knn:
+    with open("./models/knn.model", "rb") as knn:
         model = pickle.load(knn)
 
     return model
@@ -47,8 +47,25 @@ def draw_square(frame, x, y, h, w, name):
     cv2.putText(frame, name, (x, y+h+35), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=1, color=(0,255,255))
     return frame
 
+
+def bgremove(frame):
+    min_piel = np.array([90, 60, 50])
+    max_piel = np.array([255, 255, 255])
+
+    # Convert image to HSV
+    frameHSV = cv2.GaussianBlur(frame, (7, 7), 0)
+    frameHSV = cv2.cvtColor(frameHSV, cv2.COLOR_RGB2HSV)
+
+    # mascara que pilla el color del tono de piel
+    skinRegion = cv2.inRange(frameHSV, min_piel, max_piel)
+    frame_skin = cv2.bitwise_and(frame, frame, mask=skinRegion)
+
+    return frame_skin
+
+
+
 # Load video
-cap = cv2.VideoCapture('./videoChorra3.mp4')
+cap = cv2.VideoCapture('./data/videos/videoChorra3.mp4')
 
 #faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
 faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_alt.xml')

@@ -1,6 +1,7 @@
 import cv2
 import time
 import numpy as np
+import imutils
 
 
 def bgremove(frame, min_thres, min_satur, min_brigth):
@@ -21,9 +22,11 @@ def bgremove(frame, min_thres, min_satur, min_brigth):
 def main():
     window_name = "Window"
 
-    cap = cv2.VideoCapture(0)
+    # cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture('./data/videos/videoChorra3.mp4')
+
+
     cv2.namedWindow(window_name)
-    cv2.moveWindow(window_name, 20, 20)
 
     # Crating the trackbars
     cv2.createTrackbar("Min", window_name, 0, 255, lambda x: x)  # 90
@@ -32,6 +35,8 @@ def main():
 
     while True:
         _, img = cap.read()
+        
+        img =  imutils.resize(img, width=400)
 
         masked_img = bgremove(
             img,

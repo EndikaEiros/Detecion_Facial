@@ -11,7 +11,7 @@ if not os.path.exists(personPath):
     os.makedirs(personPath)
 
 # cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
-cap = cv2.VideoCapture('./videoChorra.mp4')
+cap = cv2.VideoCapture('/data/videos/videoChorra3.mp4')
 faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
 
 faceClassif_alt = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_alt.xml')
@@ -31,11 +31,11 @@ while True:
     auxFrame = frame.copy()
 
     # faces = faceClassif.detectMultiScale(gray,1.3,5)
-    # faces = faceClassif_alt.detectMultiScale(gray,1.3,5)
+    faces = faceClassif_alt.detectMultiScale(gray,1.3,5)
     # faces = faceClassif_alt2.detectMultiScale(gray,1.3,5)
     # faces = eyeClassif.detectMultiScale(gray,1.3,5)
     # faces = eyeGlassesClassif.detectMultiScale(gray,1.3,5)
-    faces = noseClassif.detectMultiScale(gray,1.3,5)
+    # faces = noseClassif.detectMultiScale(gray,1.3,5)
 
     for (x,y,w,h) in faces:
         cv2.rectangle(frame, (x,y),(x+w,y+h),(0,255,0),2)

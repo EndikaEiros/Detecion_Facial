@@ -18,7 +18,7 @@ def rotate_point(pos, img, angle):
     return int(newx), int(newy), pos[2], pos[3]
 
 
-cap = cv2.VideoCapture('./videoChorra.mp4')
+cap = cv2.VideoCapture('/data/videos/videoChorra3.mp4')
 
 # faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
 # faceClassif_alt = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_alt.xml')
