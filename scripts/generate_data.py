@@ -2,52 +2,70 @@ import cv2
 import os
 import imutils
 
-personName = 'Endika'
-dataPath = './caras'#Cambia a la ruta donde hayas almacenado Data
-personPath = dataPath + '/' + personName
+####################### Parámetros #######################
 
-if not os.path.exists(personPath):
-    print('Carpeta creada: ',personPath)
-    os.makedirs(personPath)
+# Path al vídeo
+video_path = '../data/videos/videoChorra3.mp4'
 
+# Nombre de la persona del video
+person_name = 'Alex'
+
+# Path donde se guardarán las imágenes
+person_path = '../data/train_data/unmasked/' + person_name
+
+##########################################################
+
+# Si el directorio no existe, se crea
+if not os.path.exists(person_path):
+    print('Carpeta creada: ', person_path)
+    os.makedirs(person_path)
+
+# Cargar video
 # cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
-cap = cv2.VideoCapture('/data/videos/videoChorra3.mp4')
-faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
+cap = cv2.VideoCapture(video_path)
 
-faceClassif_alt = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_alt.xml')
-faceClassif_alt2 = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_alt2.xml')
-eyeClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_eye.xml')
-eyeGlassesClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_eye_tree_eyeglasses.xml')
-noseClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_mcs_nose.xml')
+# Haarcascade face classifiers
+face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+# face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml')
+# face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
 
-count = 0
+# Inicializaciones
+image_num = 350
 
-while True:
-    
-    ret, frame = cap.read()
-    if ret == False: break
-    frame =  imutils.resize(frame, width=640)
+# Obtener primer frame
+success, frame = cap.read()
+
+# Por cada frame del video
+while success:
+
+    # Preprocesar frame y obtener caras detectadas
+    frame = imutils.resize(frame, width=640)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     auxFrame = frame.copy()
+    faces = face_classifier.detectMultiScale(gray, 1.3, 5)
 
-    # faces = faceClassif.detectMultiScale(gray,1.3,5)
-    faces = faceClassif_alt.detectMultiScale(gray,1.3,5)
-    # faces = faceClassif_alt2.detectMultiScale(gray,1.3,5)
-    # faces = eyeClassif.detectMultiScale(gray,1.3,5)
-    # faces = eyeGlassesClassif.detectMultiScale(gray,1.3,5)
-    # faces = noseClassif.detectMultiScale(gray,1.3,5)
+    # Por cada cara detectada
+    for (x, y, w, h) in faces:
 
-    for (x,y,w,h) in faces:
-        cv2.rectangle(frame, (x,y),(x+w,y+h),(0,255,0),2)
-        rostro = auxFrame[y:y+h,x:x+w]
-        rostro = cv2.resize(rostro,(150,150),interpolation=cv2.INTER_CUBIC)
-        cv2.imwrite(personPath + '/rotro_{}.jpg'.format(count),rostro)
-        count = count + 1
-    cv2.imshow('frame',frame)
+        image_num = image_num + 1
 
-    k =  cv2.waitKey(1)
-    if k == 27 or count >= 300:
+        # Recortar rostro
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        rostro = auxFrame[y:y + h, x:x + w]
+        rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
+
+        # Almacenar rostro
+        cv2.imwrite(f'{person_path}/rostro_{str(image_num)}.jpg', rostro)
+
+        cv2.imshow('frame', frame)
+
+    # Obtener siguiente frame
+    success, frame = cap.read()
+
+    k = cv2.waitKey(1)
+    if k == 27:
         break
 
+print(f'{image_num} imágenes de {person_name} almacenadas en: {person_path}')
 cap.release()
 cv2.destroyAllWindows()
