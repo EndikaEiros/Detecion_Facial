@@ -47,7 +47,7 @@ while success:
     # Por cada cara detectada
     for (x, y, w, h) in faces:
 
-        image_num = image_num + 1
+        image_num += 1
 
         # Recortar rostro
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
