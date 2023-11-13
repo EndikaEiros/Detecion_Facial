@@ -10,10 +10,13 @@ from sklearn.tree import DecisionTreeClassifier
 #################### Parámetros ####################
 
 # Path a las imágenes
-train_images_path = '../data/train_data/unmasked/'
+train_images_path = '../data/train_data/masked/'
 
 # Nombre del modelo a entrenar: (knn, decisiontree)
 modelo = 'knn'
+
+# Nombre de como se va a guardar el modelo
+nombre_modelo = 'knn_masked'
 
 ####################################################
 
@@ -93,10 +96,10 @@ else:
 model.fit(data, lables)
 
 # Guardar modelo entrendo
-save_model(model, "knn")
+save_model(model, nombre_modelo)
 
 # Probar
-image = cv2.imread("../data/train_data/unmasked/Alex/rostro_1.jpg")
+image = cv2.imread("../data/train_data/unmasked/Alex/rostro_130.jpg")
 image = cv2.resize(image, (32, 32), interpolation=cv2.INTER_AREA).reshape(1, -1)
 
 print(model.predict(image))

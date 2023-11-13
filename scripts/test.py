@@ -1,107 +1,27 @@
-from sklearn.model_selection import  train_test_split
-from sklearn.metrics import classification_report
-from imutils import paths
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.preprocessing import LabelEncoder
-import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
 import face_recognition
-import pickle 
-import imutils
-import os
-import glob
 import cv2
-import pickle 
-import numpy as np
-import cv2
+# Load the jpg file into a numpy array
+image = face_recognition.load_image_file('../data/keanu.png')
 
+# Find all facial features in all the faces in the image
+face_landmarks_list = face_recognition.face_landmarks(image)
 
-def load_model():
-    """
-    Este método carga el modelo preentrenado
+print("I found {} face(s) in this photograph.".format(len(face_landmarks_list)))
 
-    :return Modelo entrenado 
+# Create a PIL imagedraw object so we can draw on the picture
+pil_image = Image.fromarray(image)
+d = ImageDraw.Draw(pil_image)
 
-    """
-    with open("./models/knn.model", "rb") as knn:
-        model = pickle.load(knn)
+for face_landmarks in face_landmarks_list:
 
-    return model
+    # Print the location of each facial feature in this image
+    for facial_feature in face_landmarks.keys():
+        print("The {} in this face has the following points: {}".format(facial_feature, face_landmarks[facial_feature]))
 
-def draw_square(frame, x, y, h, w, name):
-    """
-    Dibuja el cuadrado sobre las caras y pone el nombre
+    # Let's trace out each facial feature in the image with a line!
+    for facial_feature in face_landmarks.keys():
+        d.line(face_landmarks[facial_feature], width=5)
 
-    :param frame
-
-    :param x
-
-    :param y
-
-    :param h
-
-    :param w
-
-    :param name
-
-    """
-    cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,255), 5)
-    cv2.putText(frame, name, (x, y+h+35), fontFace=cv2.FONT_HERSHEY_COMPLEX, fontScale=1, color=(0,255,255))
-    return frame
-
-
-def face_landmarks(image):
-
-    face_landmarks = face_recognition.face_landmarks(image)
-
-    for landmark in face_landmarks:
-        for x,y in landmark[0]:
-            cv2.circle(image, ( int(x),int(y)), 1, (255, 255, 255), 1)
-
-
-# Load video
-# frame = cv2.imread('./data/keanu.png')
-cap = cv2.VideoCapture('./data/videos/videoChorra3.mp4')
-
-#faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
-faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_alt.xml')
-
-success = True
-c = 0
-while success:
-    
-    success, frame = cap.read()
-    
-    frame =  imutils.resize(frame, width=640)
-
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    auxFrame = frame.copy()
-
-    faces = faceClassif.detectMultiScale(gray,1.3,5)
-
-    # model = load_model()
-
-    for (x,y,w,h) in faces:
-        
-        rostro = auxFrame[y:y+h,x:x+w]
-
-        rostro = cv2.resize(rostro, (32, 32), interpolation=cv2.INTER_AREA).reshape(1, -1)
-        # clase = model.predict(rostro)
-
-        # if clase[0] == 0: name = 'Alex'
-        # else: name = "Endika"
-
-        # frame = draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name)
-        frame = face_landmarks( image= frame, gray= gray,faces=faces)
-
-        if len(faces) > 1:
-            cv2.imwrite(f"./prueba/doble_cara_{c}.jpg", frame)
-            c += 1
-
-    plt.axis("off")
-    plt.imshow(frame, cmap = "gray")
-
-    cv2.imshow('frame',frame)
-    k =  cv2.waitKey(10000)
-    if k == 27:
-        break
+# Show the picture
+cv2.imshow('landmarks',pil_image)

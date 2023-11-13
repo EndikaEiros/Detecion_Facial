@@ -23,7 +23,7 @@ def main():
     window_name = "Window"
 
     # cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture('./data/videos/videoChorra3.mp4')
+    cap = cv2.VideoCapture('../data/videos/videoChorra3.mp4')
 
 
     cv2.namedWindow(window_name)
