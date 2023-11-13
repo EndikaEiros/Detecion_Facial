@@ -78,7 +78,7 @@ success, frame = cap.read()
 c = 0
 while success:
     
-    #frame =  imutils.resize(frame, width=640)
+    frame =  imutils.resize(frame, width=640)
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
