@@ -69,7 +69,7 @@ def bgremove(frame, min_thres=90, min_satur=60, min_brigth=50):
     return frame_skin
 
 # Load video
-cap = cv2.VideoCapture('../data/videos/DOS.MOV')
+cap = cv2.VideoCapture('../data/videos/videoChorra3.mp4')
 
 #faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
 faceClassif = cv2.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_alt.xml')
