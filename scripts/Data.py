@@ -11,8 +11,7 @@ from imutils import face_utils
 
 def generate_data_as_images(video_path, person_name, images_path):
 
-    if images_path.split('/')[-1] != person_name:
-        images_path += f'/{person_name}'
+    images_path += f'/{person_name}'
 
     # Si el directorio no existe, se crea
     if not os.path.exists(images_path):
@@ -24,8 +23,8 @@ def generate_data_as_images(video_path, person_name, images_path):
     cap = cv2.VideoCapture(video_path)
 
     # Haarcascade face classifiers
-    # face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml')
+    face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    # face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml')
     # face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
 
     # Inicializaciones
@@ -49,8 +48,7 @@ def generate_data_as_images(video_path, person_name, images_path):
             image_num += 1
 
             # Recortar rostro
-            cv2.rectangle(frame, (x - 5, y - 5), (x + w + 5, y + h + 5), (0, 255, 0), 2)
-            rostro = frame[y:y + h, x:x + w]
+            rostro = frame[y-5:y + h+5, x-5:x + w+5]
             rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
 
             # Almacenar rostros, en la carpeta correspondiente

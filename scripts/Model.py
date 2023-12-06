@@ -1,12 +1,10 @@
 import os
 import pickle
 from sklearn.metrics import confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
 from tqdm import tqdm
 import cv2
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
 
 """ Save trained model """
 def save_model(model, name):
@@ -48,8 +46,8 @@ def test_model(trained_model, test_images_path):
 
     accuracy = trained_model.score(X_test, y_test)
 
-    # print(confusion_matrix(y_test, pred))
-    # print(f"\nAccuracy: {accuracy}")
+    print(confusion_matrix(y_test, pred))
+    print(f"\nAccuracy: {accuracy}")
 
     return accuracy
 
@@ -67,5 +65,3 @@ def train_model(train_images_path, model):
     model.fit(X_train, y_train)
 
     return model
-
-
