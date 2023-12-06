@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
 import pandas as pd
-frk
+import dlib
+import Recognition
+
 from matplotlib import pyplot as plt
 from imutils import face_utils
 from math import sqrt, exp
@@ -20,21 +22,13 @@ def gen_data(shape):
     # indices_distancias = []
 
     for (i, (x, y)) in enumerate(shape):
-        # indices_posiciones.append(f'{i}X')
-        # indices_posiciones.append(f'{i}Y')
-
-        # indices_distancias.append(f'{i}_TO_00')
 
         posiciones.append((x - centroX))
         posiciones.append((y - centroY))
 
         distancias.append(sqrt(pow(0 - (x - centroX), 2) + pow(0 - (y - centroY), 2)))
-
-    # cabeceras = indices_posiciones + indices_distancias
+    
     datos = posiciones + distancias
-
-    # df = pd.DataFrame([datos], columns=cabeceras)
-
     return datos
 
 
@@ -54,14 +48,14 @@ def obtener_data_landmarks(frame, etiqueta):
         shape = predictor(gray, rect)
         shape = face_utils.shape_to_np(shape)
 
-        data = gen_data(shape)
+        df.loc[len(df)] = gen_data(shape)
 
         for (x, y) in shape:
-            cv2.circle(image, (x, y), 2, (0, 0, 255), -1)
+            Recognition.draw_circle(image, x, y)
 
     cv2.imshow(image)
     cv2.waitKey(1)
-    sleep(3)
+
 
     return data
 
@@ -86,3 +80,5 @@ def obtener_data_landmarks(frame, etiqueta):
 
     df = pd.DataFrame([datos], columns=cabeceras)
     df.loc[len(df)] = data
+
+    df.to_csv('folder/subfolder/out.csv') 

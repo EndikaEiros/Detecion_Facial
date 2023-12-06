@@ -101,3 +101,25 @@ def draw_square(frame, x, y, h, w, name):
     frame = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     return frame
+
+
+def draw_circle(frame, x, y, t=2):
+    """
+    Dibuja el circulo en el punto indicado. Utlizado para representar los landmarks faciales
+
+    :param frame
+
+    :param x
+
+    :param y
+
+    :param h
+
+    :param w
+
+    :param name
+
+    """
+    frame = cv2.circle(frame, (x, y), t, (0, 0, 255), -1)
+
+    return frame

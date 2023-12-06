@@ -5,6 +5,8 @@ import Model
 import Data
 import Recognition
 
+from Recognition import draw_square
+
 # Load video
 cap = cv2.VideoCapture('../data/videos/ALEX.MOV')
 
@@ -20,6 +22,8 @@ while success:
 
     auxFrame = frame.copy()
 
+    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+
     faces = faceClassif.detectMultiScale(gray, 1.3, 5)
 
     model = Model.load_model("../models/knn.model")
@@ -28,7 +32,7 @@ while success:
         # frame_masked = bgremove(auxFrame, 70, 30, 30)[y-10:y + h+10, x-10:x + w+10]
         frame_masked = auxFrame[y:y + h, x:x + w]
 
-        name = Model.predict_one(model, rostro)
+        name = Model.predict_one(model, frame_masked)
 
         frame = draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name)
 
