@@ -44,8 +44,8 @@ def show_example():
 
 def generate_csv():
     
-    video_path = 'data/videos/junkus.mov'
-    person_name ='junkus'
+    video_path = 'data/videos/endika.mp4'
+    person_name ='endika'
     landsmarks_path = 'data/train_data/csv'
     Data.generate_data_as_landmarks(video_path, person_name, landsmarks_path, False)
 
