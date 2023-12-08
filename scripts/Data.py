@@ -6,6 +6,7 @@ import pandas as pd
 import Recognition
 import dlib
 
+from time import sleep
 from math import sqrt
 from imutils import face_utils
 
@@ -21,11 +22,6 @@ def generate_data_as_images(video_path, person_name, images_path):
     # Cargar video
     # cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
     cap = cv2.VideoCapture(video_path)
-
-    # Haarcascade face classifiers
-    face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    # face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml')
-    # face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt2.xml')
 
     # Inicializaciones
     image_num = 0
@@ -70,9 +66,6 @@ def generate_data_as_images(video_path, person_name, images_path):
     cv2.destroyAllWindows()
 
 def generate_data_as_landmarks(video_path, person_name, landsmarks_path, render:bool= True):
-    
-    if video_path.split('/')[-1] != person_name:
-        video_path += f'/{person_name}'
 
     # Si el directorio no existe, se crea
     if not os.path.exists(video_path):
@@ -102,7 +95,7 @@ def generate_data_as_landmarks(video_path, person_name, landsmarks_path, render:
                  '54_TO_00', '55_TO_00', '56_TO_00', '57_TO_00', '58_TO_00', '59_TO_00', '60_TO_00', '61_TO_00',
                  '62_TO_00', '63_TO_00', '64_TO_00', '65_TO_00', '66_TO_00', '67_TO_00', 'Etiqueta']
     
-    p = "../models/shape_predictor_68_face_landmarks.dat"
+    p = "models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(p)
 
@@ -112,6 +105,8 @@ def generate_data_as_landmarks(video_path, person_name, landsmarks_path, render:
     # Obtener primer frame
     success, frame = cap.read()
 
+    height, width, channels = frame.shape
+
     print('\n Saving faces landmarks...\n')
 
     # Por cada frame del video
@@ -119,37 +114,27 @@ def generate_data_as_landmarks(video_path, person_name, landsmarks_path, render:
 
         # Preprocesar frame y obtener caras detectadas
         frame = imutils.resize(frame, width=640)
-        faces = Recognition.get_faces(frame)
 
-        # Por cada cara detectada
-        for (x, y, w, h) in faces:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            # Recortar rostro
-            cv2.rectangle(frame, (x - 5, y - 5), (x + w + 5, y + h + 5), (0, 255, 0), 2)
-            rostro = frame[y:y + h, x:x + w]
-            rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
+        rects = detector(gray, 0)
+        for (i, rect) in enumerate(rects):
 
+            shape = predictor(gray, rect)
+            shape = face_utils.shape_to_np(shape)
+
+            landmarks_df.loc[len(landmarks_df)] = generate_data_from_frame(shape, height, width) + [person_name]
+
+            for (x_2, y_2) in shape:
+                # rostro = Recognition.draw_circle(rostro, x_2, y_2)
+                frame = Recognition.draw_circle(frame, x_2, y_2)
+
+        if render:
+            # cv2.rectangle(frame, (x - 5, y - 5), (x + w + 5, y + h + 5), (0, 255, 0), 2)
+            cv2.imshow('frame', frame)
+            # cv2.imshow('frame_landmarks', rostro)
+            cv2.waitKey(1)
             
-            # Obtener los landmarks faciales
-            
-            gray = cv2.cvtColor(rostro, cv2.COLOR_BGR2GRAY)
-
-            rects = detector(gray, 0)
-            for (i, rect) in enumerate(rects):
-
-                shape = predictor(gray, rect)
-                shape = face_utils.shape_to_np(shape)
-
-                landmarks_df.loc[len(landmarks_df)] = gen_data(shape) + [person_name]
-
-                for (x_2, y_2) in shape:
-                    Recognition.draw_circle(frame, x_2, y_2)
-
-            if render:
-                cv2.imshow('frame', frame)
-                cv2.imshow('frame_landmarks', rostro)
-                cv2.waitKey(1)
-
         # Obtener siguiente frame
         success, frame = cap.read()
 
@@ -164,11 +149,12 @@ def generate_data_as_landmarks(video_path, person_name, landsmarks_path, render:
     print(f'Se han guardado los datos faciales de {person_name} en {landsmarks_path}/{person_name}.csv')
 
 
-def gen_data(shape):
+def generate_data_from_frame(shape, height, width):
     """
     Devuelve un array con la distancia desde cada punto hasta el punto 30, que es la punta de la nariz y nuestro centro de cara
     
     """
+
     distancias = []
     posiciones = []
     centroX, centroY = shape[30]
@@ -178,6 +164,7 @@ def gen_data(shape):
         posiciones.append((x - centroX))
         posiciones.append((y - centroY))
 
-        distancias.append(sqrt(pow(0 - (x - centroX), 2) + pow(0 - (y - centroY), 2)))
+        # Calcula la distancia entre el punto actual y el centro de la cara (la punta de la nariz) en proporcion al tamaño del frame
+        distancias.append(sqrt(pow((x - centroX), 2) + pow((y - centroY), 2))/ sqrt(width**2 + height**2))
     
     return posiciones + distancias
