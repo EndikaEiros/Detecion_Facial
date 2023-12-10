@@ -134,22 +134,9 @@ except:
     task = ''
     version = 'v1'
 
-
-if task == 'collect':
+if task == 'train':
 
     videos = os.listdir('data/videos')
-    for video in videos:
-
-        if version == 'v2':
-            Data.generate_data_as_images(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_images_data')
-
-        elif version == 'v3':
-            Data.generate_data_as_landmarks(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_csv_data', False)
-
-        else:
-            print("Especificar versión (v2 / v3)")
-
-elif task == 'train':
 
     model = MLPClassifier(
         hidden_layer_sizes=[20, 40],
@@ -162,10 +149,12 @@ elif task == 'train':
     )
 
     if version == 'v2':
+        Data.generate_data_as_images(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_images_data')
         images_model = Model.train_model('../data/train_images_data/', model)
         Model.save_model(images_model, 'mlp_v2.model')
 
     elif version == 'v3':
+        Data.generate_data_as_landmarks(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_csv_data', False)
         landmarks_model = Model.train_model('../data/train_csv_data/', model)
         Model.save_model(landmarks_model, 'mlp_v3.model')
 

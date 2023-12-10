@@ -1,56 +1,48 @@
 # Detección y reconocimiento facial
 
+## Versiones:
+
+- Versión 1: Únicamente se realiza la detección de los rostros en tiempo real.
+- Versión 2: Se realiza la detecciión e identificación si preprocesar las imágenes.
+- Versión 3: Se realiza la detecciión e identificación si preprocesando las imágenes.
 
 ## Modo de uso:
 
-### Data.py
+### Ver una demostración
 
-- Introducir nueva cara
+1. Ejecutar siguiente línea para ver prueba con un modelo entrenado y un vídeo pregrabado (seleccionar versión):
+   ```
+   python3 main.py example v1
+   python3 main.py example v2
+   python3 main.py example v3
+   ```
 
-    - Opción 1: Obtener imágenes del rostro desde un vídeo:
+### Entrenar modelo nuevo con nuevos rostros
+1. Introducir en el directorio data/videos/ los vídeos de las personas que se desean detectar. Es necesario que el nombre del video lleve el nombre de la persona. (Ejemplo: Pedro.MOV, Maria.mp4, etc.)
+2. Ejecutar siguiente línea recolectar los datos de los vídeos generando un nuevo dataset y entrenar el mejor modelo (seleccionar version):
     ```
-    generate_data_as_images(path_to_input_video, person_name, path_to_output_images)
+    python3 main.py train v2
+    python3 main.py train v3
     ```
-    - Opción 2: Obtener landmarks del rostro desde un vídeo:
-    ```
-    generate_data_as_images(path_to_input_video, person_name, path_to_output_landmarks)
-    ```
-  
-### Model.py
 
-- Cargar modelo previamente entrenado
-    ```
-    save_model(trained_model, name_of_saved_model)
-    ```
-- Guardar modelo entrenado
-    ```
-    trained_model = load_model(path_to_trained_model)
-    ```
-- Cargar imágenes para entrenar o evaluar
-    ```
-    X_train, y_train = load_image_data(path_to_directory_of_images)
-    ```
-- Evaluar modelo
-    ```
-    accuracy = test_model(trained_model, path_to_test_images)
-    ```
-- Predecir una instancia
-    ```
-    prediction = predict_one(trained_model, path_to_an_image)
-    ```
-- Entrenar modelo
-    ```
-    trained_model = train_model(path_to_train_images, new_model)
-    ```
-  
-### Recognition.py
+### Probar modelo en tiempo real
 
-- Obtener todas las caras de un frame
+1. Ejecutar siguiente línea para probar funcionamiento en tiempo real (seleccionar versión):
     ```
-    faces = get_faces(frame, optional_angles)
+    python3 main.py test v1
+    python3 main.py test v2
+    python3 main.py test v3
     ```
-- Dibujar sobre los rostros de un frame
-  ```
-  drawed_frame = draw_square(frame, x_coord, y_coord, height, weight, person_name)
-  ```
-  
+   (para las versiones 2 y 3 es necesario haber preentrenado un modelo nuevo con el comando anterior)
+
+## Estructura del código
+
+- Directorio data/: Contiene los datos con los que entrenar o probar el modelo.
+  - data/videos/: Vídeos de las personas para el entrenamiento.
+  - data/example/: Ejemplo de un vídeo de prueba.
+- Directorio models/: Contiene los modelos entreandos.
+- Directorio scipts/: Contiene el código.
+  - Data.py: Realiza funciones relacionadas con los datos (recolectar datasets de los vídeos).
+  - Recognition.py: Extrae información de las imágenes (landmarks, rostros girados, etc.).
+  - Model.py: Realiza funciones relacionas con los modelos (entrenar, evaluar, cargar, guardar, etc.).
+  - <Nombre>.ipynb: Preprocesado de los datos realizado (Machine Learning).
