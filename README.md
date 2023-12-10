@@ -13,7 +13,11 @@
 1. Ejecutar siguiente línea para ver prueba con un modelo entrenado y un vídeo pregrabado (seleccionar versión):
    ```
    python3 main.py example v1
+   ```
+   ```
    python3 main.py example v2
+   ```
+   ```
    python3 main.py example v3
    ```
 
@@ -22,6 +26,8 @@
 2. Ejecutar siguiente línea recolectar los datos de los vídeos generando un nuevo dataset y entrenar el mejor modelo (seleccionar version):
     ```
     python3 main.py train v2
+   ```
+   ```
     python3 main.py train v3
     ```
 
@@ -30,7 +36,11 @@
 1. Ejecutar siguiente línea para probar funcionamiento en tiempo real (seleccionar versión):
     ```
     python3 main.py test v1
+   ```
+   ```
     python3 main.py test v2
+   ```
+   ```
     python3 main.py test v3
     ```
    (para las versiones 2 y 3 es necesario haber preentrenado un modelo nuevo con el comando anterior)
