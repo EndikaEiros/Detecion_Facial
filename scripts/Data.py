@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import dlib
 import time
-# import Recognition
+from scripts import Recognition
 
 from time import sleep
 from math import sqrt
@@ -38,7 +38,7 @@ def generate_data_as_images(video_path, person_name, images_path):
 
         # Preprocesar frame y obtener caras detectadas
         frame = imutils.resize(frame, width=640)
-        #faces = Recognition.get_faces(frame)
+        faces = Recognition.get_faces(frame)
 
         # Por cada cara detectada
         for (x, y, w, h) in faces:
@@ -46,33 +46,22 @@ def generate_data_as_images(video_path, person_name, images_path):
             image_num += 1
 
             # Recortar rostro
-            rostro = frame[y-5:y + h+5, x-5:x + w+5]
-            rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
+            rostro = frame[y:y + h, x:x + w]
+            try:
+                rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
+            except:
+                continue
 
             # Almacenar rostros, en la carpeta correspondiente
             cv2.imwrite(f'{images_path}/rostro_{str(image_num)}.jpg', rostro)
 
-            # Visualiar el video
-            # cv2.imshow('frame', frame)
-            # cv2.imshow('masked_frame', frame_masked)
-
         # Obtener siguiente frame
         success, frame = cap.read()
 
-        k = cv2.waitKey(1)
-        if k == 27:
-            break
-
     print(f'{image_num} imágenes de {person_name} almacenadas en: {images_path}')
     cap.release()
-    cv2.destroyAllWindows()
 
 def generate_data_as_landmarks(video_path, person_name):
-
-    # Si el directorio no existe, se crea
-    if not os.path.exists(video_path):
-        print('Carpeta creada: ', video_path)
-        os.makedirs(video_path)
 
     # Cargar video
     cap = cv2.VideoCapture(video_path)
