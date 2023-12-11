@@ -1,12 +1,10 @@
-from math import sin, cos, radians
-
 import cv2
 import dlib
 import imutils
 import numpy as np
-import pandas as pd
-from math import sqrt
-from scripts.Data import generate_dist_from_frame
+
+from scripts import Data
+from math import sin, cos, radians
 
 """ Borrar el fondo de la imagen """
 
@@ -81,6 +79,7 @@ def get_faces(frame, angles=None):
 
     return detected_faces
 
+""" Obtiene los datos de la imagen (distancias y colores) """
 
 def get_distances(frame):
 
@@ -92,9 +91,6 @@ def get_distances(frame):
     data = []
     all_squares = []
 
-    # Preprocesar frame y obtener caras detectadas
-    frame = imutils.resize(frame, width=640)
-
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     rects = detector(gray, 0)
@@ -104,7 +100,7 @@ def get_distances(frame):
         shape = predictor(gray, rect)
         shape = imutils.face_utils.shape_to_np(shape)
 
-        data.append(generate_dist_from_frame(shape, frame))
+        data.append(Data.generate_dist_from_frame(shape, frame))
 
         # Get square coords
         all_squares.append([shape[0][0], shape[23][1], shape[16][0]-shape[0][0], shape[8][1]-shape[23][1]])
@@ -112,47 +108,19 @@ def get_distances(frame):
 
     return data, all_squares
 
+""" Dibuja el cuadrado sobre las caras y pone el nombre """
 
 def draw_square(frame, x, y, h, w, name):
-    """
-    Dibuja el cuadrado sobre las caras y pone el nombre
-
-    :param frame
-
-    :param x
-
-    :param y
-
-    :param h
-
-    :param w
-
-    :param name
-
-    """
+ 
     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 255), 6)
-    cv2.putText(frame, name, (x, y + h + 20), cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 255), 1, cv2.LINE_AA)
+    cv2.putText(frame, name, (x, y + h + 20), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 255), 1, cv2.LINE_AA)
 
     return frame
 
+""" Dibuja el circulo en el punto indicado. Utlizado para representar los landmarks faciales """
 
 def draw_circle(frame, x, y, t=2):
-    """
-    Dibuja el circulo en el punto indicado. Utlizado para representar los landmarks faciales
 
-    :param frame
-
-    :param x
-
-    :param y
-
-    :param h
-
-    :param w
-
-    :param name
-
-    """
     frame = cv2.circle(frame, (x, y), t, (0, 0, 255), -1)
 
     return frame
