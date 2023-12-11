@@ -2,7 +2,7 @@ import os
 import pickle
 from sklearn.metrics import confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
-from tqdm import tqdm
+
 import cv2
 import numpy as np
 
@@ -62,6 +62,14 @@ def predict_one(trained_model, image):
 def train_model(train_images_path, model):
 
     X_train, y_train = load_image_data(train_images_path)
+    model.fit(X_train, y_train)
+
+    return model
+
+def train_model_csv(landmarks_df, model):
+
+    X_train = landmarks_df.drop(['Etiqueta'], axis=1)
+    y_train = landmarks_df['Etiqueta']
     model.fit(X_train, y_train)
 
     return model
