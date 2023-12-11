@@ -8,7 +8,7 @@ import numpy as np
 
 """ Save trained model """
 def save_model(model, name):
-    with open(f"../models/{name}.model", "wb") as f:
+    with open(f"models/{name}.model", "wb") as f:
         pickle.dump(model, f)
 
 

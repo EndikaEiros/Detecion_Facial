@@ -3,9 +3,9 @@ import os
 import imutils
 import numpy as np
 import pandas as pd
-import Recognition
 import dlib
 import time
+# import Recognition
 
 from time import sleep
 from math import sqrt
@@ -38,7 +38,7 @@ def generate_data_as_images(video_path, person_name, images_path):
 
         # Preprocesar frame y obtener caras detectadas
         frame = imutils.resize(frame, width=640)
-        faces = Recognition.get_faces(frame)
+        #faces = Recognition.get_faces(frame)
 
         # Por cada cara detectada
         for (x, y, w, h) in faces:
@@ -67,7 +67,7 @@ def generate_data_as_images(video_path, person_name, images_path):
     cap.release()
     cv2.destroyAllWindows()
 
-def generate_data_as_landmarks(video_path, person_name, landmarks_path, landmarks_df):
+def generate_data_as_landmarks(video_path, person_name):
 
     # Si el directorio no existe, se crea
     if not os.path.exists(video_path):
@@ -78,12 +78,15 @@ def generate_data_as_landmarks(video_path, person_name, landmarks_path, landmark
     cap = cv2.VideoCapture(video_path)
 
     # Cargar el modelo de reconocimiento de landmarks
-    p = "drive/MyDrive/MEDIA/shape_predictor_68_face_landmarks.dat"
+    p = "models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(p)
 
     # Obtener primer frame
     success, frame = cap.read()
+
+    # Almacenar caras
+    data = []
 
     # Por cada frame del video
     while success:
@@ -100,14 +103,14 @@ def generate_data_as_landmarks(video_path, person_name, landmarks_path, landmark
             shape = predictor(gray, rect)
             shape = face_utils.shape_to_np(shape)
 
-            landmarks_df.loc[len(landmarks_df)] = generate_dist_from_frame(shape, frame) + [person_name]
+            data.append(generate_dist_from_frame(shape, frame) + [person_name])
 
         # Obtener siguiente frame
         success, frame = cap.read()
 
     cap.release()
 
-    landmarks_df.to_csv(f'{landmarks_path}/train.csv')
+    return data
 
 
 def generate_dist_from_frame(shape, frame):
@@ -142,5 +145,7 @@ def generate_dist_from_frame(shape, frame):
 
     for n in frame[min(shape[19][1],shape[24][1]),shape[27][0]]:
         extra.append(n)
+
+    return distancias + extra
 
 
