@@ -62,7 +62,7 @@ def version2(model, realtime=True):
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/test/TEST3.MOV')
+        cap = cv2.VideoCapture('data/test/TEST.MOV')
 
     success, frame = cap.read()
     while success:
@@ -72,10 +72,10 @@ def version2(model, realtime=True):
 
         # Por cada cara detectada
         for (x, y, w, h) in faces:
-            rostro = frame[y - 5:y + h + 5, x - 5:x + w + 5]
+            rostro = frame[y:y+h, x:x+w]
             rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
             probs = model.predict_proba(rostro.reshape(1, -1))
-            if any(prob > 0.999999 for prob in probs[0]): name = Model.predict_one(model, rostro)
+            if any(prob > 0.8 for prob in probs[0]): name = Model.predict_one(model, rostro)
             else: name = ['Desconocido']
             frame = Recognition.draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name[0])
 
@@ -100,11 +100,12 @@ def version3(model, realtime=True):
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/test_data/videos/TEST3.MOV')
+        cap = cv2.VideoCapture('data/test/TEST.MOV')
 
     success, frame = cap.read()
     while success:
 
+        frame = imutils.resize(frame, width=640)
         faces, squares = Recognition.get_distances(frame)
 
         # Por cada cara detectada
@@ -113,14 +114,13 @@ def version3(model, realtime=True):
             df = pd.DataFrame([face], columns=headers[:-1])
             
             probs = model.predict_proba(df[headers[:-1]])
-            if any(prob > 0.999999 for prob in probs[0]):
-                name = model.predict(df[headers])
+            if any(prob > 0.5 for prob in probs[0]):
+                name = model.predict(df[headers[:-1]])
             else:
                 name = ['Desconocido']
 
             frame = Recognition.draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name[0])
         
-        frame = imutils.resize(frame, width=640)
         cv2.imshow('frame', frame)
 
         success, frame = cap.read()
@@ -145,29 +145,27 @@ except:
 
 if task == 'train':
 
-    videos = os.listdir('data/videos')
+    videos = os.listdir('data/train')
 
     # model = MLPClassifier(hidden_layer_sizes=[20, 40], activation='relu', early_stopping=True,
     #     random_state=13, max_iter=1000, solver='adam', verbose=False)
     
     model = LogisticRegression(max_iter=10000)
-    data = []
 
     if version == 'v2':
-
-        for video in videos:
-            Data.generate_data_as_images(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_images_data')
         
-        images_model = Model.train_model('../data/train_images_data/', model)
-        Model.save_model(images_model, 'v2.model')
+        for video in videos:
+            Data.generate_data_as_images(f'data/train/{video}', video.split('.')[0], 'data/train_images')
+
+        images_model = Model.train_model('data/train_images/', model)
+        Model.save_model(images_model, 'v2')
 
     elif version == 'v3':
 
         data = []
         for video in videos:
-            landmarks =  Data.generate_data_as_landmarks(f'data/videos/{video}', video.split('.')[0])
-            for elem in landmarks:
-                data.append(elem)
+            landmarks =  Data.generate_data_as_landmarks(f'data/train/{video}', video.split('.')[0])
+            data += [elem for elem in landmarks]
     
         landmarks_df = pd.DataFrame(data, columns=headers)
         landmarks_df.to_csv(f'train.csv')
@@ -181,7 +179,7 @@ if task == 'train':
 elif task == 'test':
 
     if version == 'v2':
-        version2(Model.load_model("models/v2.model"))
+        version2(Model.load_model("models/v2.model"), realtime=False)
 
     elif version == 'v3':
         version3(Model.load_model("models/v3.model"), realtime=False)
