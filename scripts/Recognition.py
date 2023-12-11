@@ -1,7 +1,11 @@
 from math import sin, cos, radians
 
 import cv2
+import dlib
+import imutils
 import numpy as np
+import pandas as pd
+from math import sqrt
 
 """ Borrar el fondo de la imagen """
 
@@ -75,6 +79,65 @@ def get_faces(frame, angles=None):
             detected_faces.append(rotate_point(face, frame, angle=-angle))
 
     return detected_faces
+
+
+def get_distances(frame):
+
+    p = "models/shape_predictor_68_face_landmarks.dat"
+    detector = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor(p)
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    rects = detector(gray, 0)
+
+    all_faces = []
+    all_squares = []
+
+    for (i, rect) in enumerate(rects):
+
+        shape = predictor(gray, rect)
+        shape = imutils.face_utils.shape_to_np(shape)
+
+        h = sqrt((shape[0][0] - shape[16][0])**2 + (shape[0][1] - shape[16][1])**2)
+        v = sqrt((shape[8][0] - shape[27][0])**2 + (shape[8][1] - shape[27][1])**2)
+
+        data = []
+        list1 = [36, 42, 27, 31, 17, 22, 48, 6, 8, 51]
+        vertical = [28, 9, 52]
+        list2 = [39, 45, 33, 35, 21, 26, 54, 10, 57, 33]
+
+        # Get distances
+        for a, b in zip(list1, list2):
+
+            real_dist = sqrt((shape[a][0] - shape[b][0])**2 + (shape[a][1] - shape[b][1])**2)
+
+            if a in vertical:
+                data.append(real_dist / v)
+            else:
+                data.append(real_dist / h)
+
+        # Get colors
+
+        for n in frame[shape[2][1],shape[19][0]]:
+            data.append(n)
+
+        for n in frame[shape[14][1],shape[24][0]]:
+            data.append(n)
+
+        for n in frame[shape[5][1],shape[8][0]]:
+            data.append(n)
+
+        for n in frame[min(shape[19][1],shape[24][1]),shape[27][0]]:
+            data.append(n)
+
+        all_faces.append(data)
+
+        # Get square coords
+        all_squares.append([shape[0][0], shape[23][1], shape[16][0]-shape[0][0], shape[8][1]-shape[23][1]])
+
+
+    return all_faces, all_squares
 
 
 def draw_square(frame, x, y, h, w, name):
