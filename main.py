@@ -15,6 +15,13 @@ from scripts import Model
 from scripts import Recognition
 
 
+headers = ['right_eye', 'left_eye', 'nose_height', 'nose_width', 'right_eyebrow', 'left_eyebrow',
+            'mouth', 'chin', 'dist_chin_mouth', 'dist_mouth_nose',
+            'pixel_piel_1_B', 'pixel_piel_1_G', 'pixel_piel_1_R',
+            'pixel_piel_2_B', 'pixel_piel_2_G', 'pixel_piel_2_R',
+            'pixel_piel_3_B', 'pixel_piel_3_G', 'pixel_piel_3_R',
+            'pixel_piel_4_B', 'pixel_piel_4_G', 'pixel_piel_4_R', 'Etiqueta']
+
 def version1(realtime=True):
     """
     Esta versión únicamente detecta rostros en tiempo real
@@ -29,11 +36,11 @@ def version1(realtime=True):
     while success:
 
         frame = imutils.resize(frame, width=640)
-        faces = Recognition.get_faces(frame)
+        faces = get_faces(frame)
 
         # Por cada cara detectada
         for (x, y, w, h) in faces:
-            frame = Recognition.draw_square(frame=frame, x=x, y=y, w=w, h=h, name='')
+            frame = draw_square(frame=frame, x=x, y=y, w=w, h=h, name='')
 
         cv2.imshow('frame', frame)
 
@@ -55,13 +62,13 @@ def version2(model, realtime=True):
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/videos/example.MOV')
+        cap = cv2.VideoCapture('data/test/TEST3.MOV')
 
     success, frame = cap.read()
     while success:
 
         frame = imutils.resize(frame, width=640)
-        faces = Recognition.get_faces(frame)
+        faces = get_faces(frame)
 
         # Por cada cara detectada
         for (x, y, w, h) in faces:
@@ -70,7 +77,7 @@ def version2(model, realtime=True):
             probs = model.predict_proba(rostro.reshape(1, -1))
             if any(prob > 0.999999 for prob in probs[0]): name = Model.predict_one(model, rostro)
             else: name = ['Desconocido']
-            frame = Recognition.draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name[0])
+            frame = draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name[0])
 
         cv2.imshow('frame', frame)
 
@@ -93,25 +100,27 @@ def version3(model, realtime=True):
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/videos/example.MOV')
+        cap = cv2.VideoCapture('data/test/TEST3.MOV')
 
     success, frame = cap.read()
     while success:
 
-        frame = imutils.resize(frame, width=640)
-        faces = Recognition.get_faces(frame)
+        faces, squares = get_distances(frame)
 
         # Por cada cara detectada
-        for (x, y, w, h) in faces:
-            rostro = frame[y - 5:y + h + 5, x - 5:x + w + 5]
-            rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
-            probs = model.predict_proba(rostro.reshape(1, -1))
+        for face, (x, y, h, w) in zip(faces, squares):
+            
+            df = pd.DataFrame(face, columns=headers)
+            
+            probs = model.predict_proba(df[headers])
             if any(prob > 0.999999 for prob in probs[0]):
-                name = Model.predict_one(model, rostro)
+                name = model.predict(df[headers])
             else:
                 name = ['Desconocido']
-            frame = Recognition.draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name[0])
 
+            frame = draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name[0])
+        
+        frame = imutils.resize(frame, width=640)
         cv2.imshow('frame', frame)
 
         success, frame = cap.read()
@@ -138,36 +147,37 @@ if task == 'train':
 
     videos = os.listdir('data/videos')
 
-    model = MLPClassifier(
-        hidden_layer_sizes=[20, 40],
-        activation='relu',
-        early_stopping=True,
-        random_state=13,
-        max_iter=1000,
-        solver='adam',
-        verbose=False
-    )
+    # model = MLPClassifier(hidden_layer_sizes=[20, 40], activation='relu', early_stopping=True,
+    #     random_state=13, max_iter=1000, solver='adam', verbose=False)
+    
+    model = LogisticRegression(max_iter=10000)
 
-    if version == 'v2':
-        Data.generate_data_as_images(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_images_data')
-        images_model = Model.train_model('../data/train_images_data/', model)
-        Model.save_model(images_model, 'mlp_v2.model')
+    if version == 'v3':
+        landmarks_df = pd.DataFrame(columns=headers)
 
-    elif version == 'v3':
-        Data.generate_data_as_landmarks(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_csv_data', False)
-        landmarks_model = Model.train_model('../data/train_csv_data/', model)
-        Model.save_model(landmarks_model, 'mlp_v3.model')
+    for video in videos:
 
-    else:
-        print("Especificar versión (v2 / v3)")
+        if version == 'v2':
+            Data.generate_data_as_images(f'data/videos/{video}', {video.split('.')[0]}, 'data/train_images_data')
+            images_model = Model.train_model('../data/train_images_data/', model)
+            Model.save_model(images_model, 'v2.model')
+
+        elif version == 'v3':
+            landmarks_df = Data.generate_data_as_landmarks(f'data/videos/{video}', {video.split('.')[0]}, pd.DataFrame(columns=headers))
+            landmarks_model = Model.train_model_csv(landmarks_df, model)
+            Model.save_model(landmarks_model, 'v3.model')
+
+        else:
+            print("Especificar versión (v2 / v3)")
+            break
 
 elif task == 'test':
 
     if version == 'v2':
-        version2(Model.load_model("../models/mlp_v2.model"))
+        version2(Model.load_model("../models/v2.model"))
 
     elif version == 'v3':
-        version3(Model.load_model("../models/mlp_v3.model"))
+        version3(Model.load_model("../models/v3.model"), realtime=False)
 
     else:
         version1()
@@ -175,10 +185,10 @@ elif task == 'test':
 elif task == 'example':
 
     if version == 'v2':
-        version2(Model.load_model("../models/example_mlp_v2.model"), realtime=False)
+        version2(Model.load_model("../models/example_v2.model"), realtime=False)
 
     elif version == 'v3':
-        version3(Model.load_model("../models/example_mlp_v3.model"), realtime=False)
+        version3(Model.load_model("../models/example_v3.model"), realtime=False)
 
     else:
         version1(realtime=False)
