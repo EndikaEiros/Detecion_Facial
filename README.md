@@ -20,9 +20,10 @@
    ```
    python3 main.py example v3
    ```
+   Es posible hacer una prueba con un vídeo propio introduciendo el vídeo en 'data/test' con el nombre 'EXAMPLE.MOV'
 
 ### Entrenar modelo nuevo con nuevos rostros
-1. Introducir en el directorio data/videos/ los vídeos de las personas que se desean detectar. Es necesario que el nombre del video lleve el nombre de la persona. (Ejemplo: Pedro.MOV, Maria.mp4, etc.)
+1. Introducir en el directorio 'data/train/' los vídeos de las personas que se desean detectar. Es necesario que el nombre del video lleve el nombre de la persona. (Ejemplo: Pedro.MOV, Maria.mp4, etc.)
 2. Ejecutar siguiente línea recolectar los datos de los vídeos generando un nuevo dataset y entrenar el mejor modelo (seleccionar version):
     ```
     python3 main.py train v2
