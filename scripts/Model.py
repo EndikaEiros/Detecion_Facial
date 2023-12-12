@@ -66,7 +66,7 @@ def train_model(train_images_path, model):
 
     return model
 
-def train_model_csv(landmarks_df, model):
+def train_model_df(landmarks_df, model):
 
     X_train = landmarks_df.drop(['Etiqueta'], axis=1)
     y_train = landmarks_df['Etiqueta']
