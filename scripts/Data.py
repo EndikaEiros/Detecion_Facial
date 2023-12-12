@@ -18,11 +18,9 @@ def generate_data_as_images(video_path, person_name, images_path):
 
     # Si el directorio no existe, se crea
     if not os.path.exists(images_path):
-        print('Carpeta creada: ', images_path)
         os.makedirs(images_path)
 
     # Cargar video
-    # cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
     cap = cv2.VideoCapture(video_path)
 
     # Inicializaciones
@@ -31,7 +29,7 @@ def generate_data_as_images(video_path, person_name, images_path):
     # Obtener primer frame
     success, frame = cap.read()
 
-    print('\n Saving faces...\n')
+    print(f"\n Saving {person_name}'s faces...\n")
 
     # Por cada frame del video
     while success:
@@ -58,7 +56,7 @@ def generate_data_as_images(video_path, person_name, images_path):
         # Obtener siguiente frame
         success, frame = cap.read()
 
-    print(f'{image_num} imágenes de {person_name} almacenadas en: {images_path}')
+    print(f'{image_num} imágenes de {person_name} obtenidas para el entrenamiento')
     cap.release()
 
 def generate_data_as_landmarks(video_path, person_name):
