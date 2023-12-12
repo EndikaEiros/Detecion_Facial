@@ -53,6 +53,7 @@ def rotate_point(pos, img, angle):
 
 
 def get_faces(frame, angles=None):
+    
     if angles is None or not len(angles):
         angles = [0]
 
@@ -81,15 +82,13 @@ def get_faces(frame, angles=None):
 
 """ Obtiene los datos de la imagen (distancias y colores) """
 
-def get_distances(frame):
-
-    # Cargar el modelo de reconocimiento de landmarks
-    p = "models/shape_predictor_68_face_landmarks.dat"
-    detector = dlib.get_frontal_face_detector()
-    predictor = dlib.shape_predictor(p)
-
+def get_distances(frame, detector, predictor):
+   
     data = []
     all_squares = []
+
+    # Preprocesar frame y obtener caras detectadas
+    #frame = imutils.resize(frame, width=640)
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
