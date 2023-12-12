@@ -3,9 +3,11 @@ import sys
 import time
 import pandas as pd
 import numpy as np
+import dlib
 
 import cv2
 import imutils
+from shutil import rmtree
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
@@ -30,7 +32,7 @@ def version1(realtime=True):
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/videos/example.MOV')
+        cap = cv2.VideoCapture('data/test/EXAMPLE.MOV')
 
     success, frame = cap.read()
     while success:
@@ -62,7 +64,7 @@ def version2(model, realtime=True):
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/test/TEST.MOV')
+        cap = cv2.VideoCapture('data/test/EXAMPLE.MOV')
 
     success, frame = cap.read()
     while success:
@@ -97,25 +99,29 @@ def version3(model, realtime=True):
     Obtiene las distancias de los landmarks por cada rostro.
     """
 
+    p = "models/shape_predictor_68_face_landmarks.dat"
+    detector = dlib.get_frontal_face_detector()
+    predictor = dlib.shape_predictor(p)
+
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/test/TEST.MOV')
+        cap = cv2.VideoCapture('data/test/EXAMPLE.MOV')
 
     success, frame = cap.read()
     while success:
 
         frame = imutils.resize(frame, width=640)
-        faces, squares = Recognition.get_distances(frame)
+        faces, squares = Recognition.get_distances(frame, detector, predictor)
 
         # Por cada cara detectada
         for face, (x, y, h, w) in zip(faces, squares):
             
             df = pd.DataFrame([face], columns=headers[:-1])
             
-            probs = model.predict_proba(df[headers[:-1]])
+            probs = model.predict_proba(df)
             if any(prob > 0.5 for prob in probs[0]):
-                name = model.predict(df[headers[:-1]])
+                name = model.predict(df)
             else:
                 name = ['Desconocido']
 
@@ -145,10 +151,22 @@ except:
 
 if task == 'train':
 
+    if version == 'v1':
+
+        print("La versión 1 no requiere entrenamiento")
+        exit(1)
+
     videos = os.listdir('data/train')
 
+    if len(videos) == 0:
+        print("\nNo hay vídeos para el entrenamiento:\n"
+            " - Introducir vídeos en 'data/train'\n"
+            " - El nombre de los vídeos deben ser el nombre de la persona que sale en él\n"
+            "    (Ejemplo: Pedro.MOV, Maria.mp4, etc.)\n")
+        exit(1)
+
     # model = MLPClassifier(hidden_layer_sizes=[20, 40], activation='relu', early_stopping=True,
-    #     random_state=13, max_iter=1000, solver='adam', verbose=False)
+    #     random_state=13, max_iter=10000, solver='adam', verbose=False)
     
     model = LogisticRegression(max_iter=10000)
 
@@ -159,6 +177,8 @@ if task == 'train':
 
         images_model = Model.train_model('data/train_images/', model)
         Model.save_model(images_model, 'v2')
+        rmtree("data/train_images")
+
 
     elif version == 'v3':
 
@@ -168,35 +188,46 @@ if task == 'train':
             data += [elem for elem in landmarks]
     
         landmarks_df = pd.DataFrame(data, columns=headers)
-        landmarks_df.to_csv(f'train.csv')
-        landmarks_model = Model.train_model_csv(landmarks_df, model)
+        # landmarks_df.to_csv(f'train.csv')
+        landmarks_model = Model.train_model_df(landmarks_df, model)
         Model.save_model(landmarks_model, 'v3')
-
-    else:
-        print("Especificar versión (v2 / v3)")
 
 
 elif task == 'test':
 
     if version == 'v2':
-        version2(Model.load_model("models/v2.model"), realtime=False)
+        try:
+            model = Model.load_model("models/v2.model")
+
+        except:
+            print("Es necesario entrenar un modelo primero")
+            exit(1)
+
+        version2(model, realtime=False)
 
     elif version == 'v3':
+        try:
+            model = Model.load_model("models/v3.model")
+            
+        except:
+            print("Es necesario entrenar un modelo primero")
+            exit(1)
+
         version3(Model.load_model("models/v3.model"), realtime=False)
 
     else:
-        version1()
+        version1(realtime=False)
 
 elif task == 'example':
 
     if version == 'v2':
-        version2(Model.load_model("../models/example_v2.model"), realtime=False)
+        version2(Model.load_model("models/example_v2.model"), realtime=False)
 
     elif version == 'v3':
-        version3(Model.load_model("../models/example_v3.model"), realtime=False)
+        version3(Model.load_model("models/example_v3.model"), realtime=False)
 
     else:
         version1(realtime=False)
 
 else:
-    print("Especificar tarea (collect / train / test / example)")
+    print("Especificar tarea (train / test / example)")
