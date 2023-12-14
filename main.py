@@ -165,10 +165,16 @@ if task == 'train':
             "    (Ejemplo: Pedro.MOV, Maria.mp4, etc.)\n")
         exit(1)
 
-    # model = MLPClassifier(hidden_layer_sizes=[20, 40], activation='relu', early_stopping=True,
-    #     random_state=13, max_iter=10000, solver='adam', verbose=False)
+    #### PROVISIONAL #### Probar varios modelos
+
+    mlp_model = MLPClassifier(hidden_layer_sizes=[20, 40], activation='relu', early_stopping=True,
+        random_state=13, max_iter=10000, solver='adam', verbose=False)
     
+    lr_model = LogisticRegression(max_iter=10000)
+
     model = LogisticRegression(max_iter=10000)
+
+    ###########################################
 
     if version == 'v2':
         
@@ -189,8 +195,19 @@ if task == 'train':
     
         landmarks_df = pd.DataFrame(data, columns=headers)
         # landmarks_df.to_csv(f'train.csv')
-        landmarks_model = Model.train_model_df(landmarks_df, model)
-        Model.save_model(landmarks_model, 'v3')
+
+        #### PROVISIONAL #### Entrenar varios modelos
+
+        # landmarks_model = Model.train_model_df(landmarks_df, model)
+        # Model.save_model(landmarks_model, 'v3')
+
+        landmarks_model = Model.train_model_df(landmarks_df, mlp_model)
+        Model.save_model(landmarks_model, 'mlp_v3')
+
+        landmarks_model = Model.train_model_df(landmarks_df, lr_model)
+        Model.save_model(landmarks_model, 'lr_v3')
+
+        #############################################
 
 
 elif task == 'test':
@@ -206,14 +223,38 @@ elif task == 'test':
         version2(model, realtime=False)
 
     elif version == 'v3':
+
         try:
-            model = Model.load_model("models/v3.model")
+            model = Model.load_model("models/lr_v3.model")
             
         except:
             print("Es necesario entrenar un modelo primero")
             exit(1)
 
-        version3(Model.load_model("models/v3.model"), realtime=False)
+        version3(Model.load_model("models/lr_v3.model"), realtime=False)
+
+        #### PROVISIONAL #### Obtener métricas
+
+        print("\n Calculando métricas...\n")
+        videos = os.listdir('data/test')
+        test_data = []
+        for video in videos:
+            if 'TEST' in video:
+                landmarks =  Data.generate_data_as_landmarks(f'data/test/{video}', video.split('.')[0])
+                test_data += [elem for elem in landmarks]
+    
+        landmarks_test_df = pd.DataFrame(test_data, columns=headers)
+
+        X_test = landmarks_test_df.drop(['Etiqueta'], axis=1)
+        y_test = landmarks_test_df['Etiqueta']
+
+        mlp_model = Model.load_model("models/mlp_v3.model")
+        print(f" MultiLayer Perceptron - Accuracy: {mlp_model.score(X_test, y_test)}")
+
+        lr_model = Model.load_model("models/lr_v3.model")
+        print(f" Logistic Regression   - Accuracy: {lr_model.score(X_test, y_test)}")
+
+        ########################################
 
     else:
         version1(realtime=False)
