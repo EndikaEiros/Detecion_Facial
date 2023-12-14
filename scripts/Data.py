@@ -102,37 +102,45 @@ def generate_data_as_landmarks(video_path, person_name):
 
 def generate_dist_from_frame(shape, frame):
 
-    h = sqrt((shape[0][0] - shape[16][0])**2 + (shape[0][1] - shape[16][1])**2)
-    v = sqrt((shape[8][0] - shape[27][0])**2 + (shape[8][1] - shape[27][1])**2)
+    # h = sqrt((shape[0][0] - shape[16][0])**2 + (shape[0][1] - shape[16][1])**2)
+    # v = sqrt((shape[8][0] - shape[27][0])**2 + (shape[8][1] - shape[27][1])**2)
+
+    # distancias = []
+    # list1 = [36, 42, 27, 31, 17, 22, 48, 6, 8, 51, 3, 11, 0, 16]
+    # vertical = [28, 9, 52]
+    # list2 = [39, 45, 33, 35, 21, 26, 54, 10, 57, 33, 5, 13, 2, 14]
+
+    # for a, b in zip(list1, list2):
+
+    #     real_dist = sqrt((shape[a][0] - shape[b][0])**2 + (shape[a][1] - shape[b][1])**2)
+
+    #     if a in vertical:
+    #         distancias.append(real_dist / v)
+    #     else:
+    #         distancias.append(real_dist / h)
+
+    # extra = []
+
+    # for n in frame[shape[2][1],shape[19][0]]:
+    #     extra.append(n)
+
+    # for n in frame[shape[14][1],shape[24][0]]:
+    #     extra.append(n)
+
+    # for n in frame[shape[5][1],shape[8][0]]:
+    #     extra.append(n)
+
+    # for n in frame[min(shape[19][1],shape[24][1]),shape[27][0]]:
+    #     extra.append(n)
+
+    # return distancias + extra
 
     distancias = []
-    list1 = [36, 42, 27, 31, 17, 22, 48, 6, 8, 51]
-    vertical = [28, 9, 52]
-    list2 = [39, 45, 33, 35, 21, 26, 54, 10, 57, 33]
 
-    for a, b in zip(list1, list2):
+    for i in range(0,68):
+        for j in range(i+1,68):
+            distancias.append(sqrt((shape[i][0] - shape[j][0])**2 + (shape[i][1] - shape[j][1])**2))
 
-        real_dist = sqrt((shape[a][0] - shape[b][0])**2 + (shape[a][1] - shape[b][1])**2)
-
-        if a in vertical:
-            distancias.append(real_dist / v)
-        else:
-            distancias.append(real_dist / h)
-
-    extra = []
-
-    for n in frame[shape[2][1],shape[19][0]]:
-        extra.append(n)
-
-    for n in frame[shape[14][1],shape[24][0]]:
-        extra.append(n)
-
-    for n in frame[shape[5][1],shape[8][0]]:
-        extra.append(n)
-
-    for n in frame[min(shape[19][1],shape[24][1]),shape[27][0]]:
-        extra.append(n)
-
-    return distancias + extra
+    return distancias
 
 
