@@ -68,7 +68,7 @@ def test_rotation():
     cap.release()
     cv2.destroyAllWindows()
 
-def get_drawed_landmarks_from_image()
+def get_drawed_landmarks_from_image():
          
     p = "models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
