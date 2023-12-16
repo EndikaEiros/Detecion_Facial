@@ -94,18 +94,21 @@ def get_distances(frame, detector, predictor):
 
     rects = detector(gray, 0)
 
+    shapes = []
+
     for (i, rect) in enumerate(rects):
 
         shape = predictor(gray, rect)
         shape = imutils.face_utils.shape_to_np(shape)
 
+        shapes.append(shape)
         data.append(Data.generate_dist_from_frame(shape, frame))
 
         # Get square coords
         all_squares.append([shape[0][0], shape[23][1], shape[16][0]-shape[0][0], shape[8][1]-shape[23][1]])
 
 
-    return data, all_squares
+    return data, all_squares, shapes
 
 """ Dibuja el cuadrado sobre las caras y pone el nombre """
 
@@ -121,5 +124,55 @@ def draw_square(frame, x, y, h, w, name):
 def draw_circle(frame, x, y, t=2):
 
     frame = cv2.circle(frame, (x, y), t, (0, 0, 255), -1)
+
+    return frame
+
+
+def draw_landmarks(frame, face_shape, square , name):
+
+    # Inicilalización
+    list1 = []
+    list2 = []
+
+    # Contorno cara
+    list1 += [0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 0, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+    list2 += [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,18, 19, 20, 21, 22, 23, 24, 25, 26, 16]
+
+    # Nariz
+    list1 += [27, 27, 27, 31, 31, 35]
+    list2 += [30, 31, 35, 35, 30, 30]
+
+    # Ojo derecho
+    list1 += [36, 37, 38, 39, 40, 41]
+    list2 += [37, 38, 39, 40, 41, 36]
+
+    # Ojo Izquierdo
+    list1 += [42, 43, 44, 45, 46, 47]
+    list2 += [43, 44, 45, 46, 47, 42]
+
+    # boca
+    list1 += [48, 49, 50,52, 53, 54, 55, 56, 57, 58, 59]
+    list2 += [49, 50,52, 53, 54, 55, 56, 57, 58, 59, 48]
+
+    # Rayas Extra
+    list1 += [0, 48, 16, 54, 48, 54, 0, 16, 31, 39, 42, 42,  0, 45]
+    list2 += [48, 5, 54, 11,  8,  8, 5, 11, 39, 27, 27, 35, 36, 16]
+
+    # Nariz boca y esquina cara
+    list1 += [31, 35, 54, 0, 0, 16]
+    list2 += [48, 54, 16, 48, 31, 35]
+    
+    # print(face_shape)
+
+    for a, b in zip(list1, list2):
+
+        start_point = (face_shape[a][0], face_shape[int(a)][1])
+        end_point = (face_shape[int(b)][0], face_shape[int(b)][1])
+
+        frame = cv2.line(frame, start_point, end_point, (0, 255, 155) , 1)
+    
+    x, y, h, w = square
+    cv2.putText(frame, name, (x, y - 20), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 155), 1, cv2.LINE_AA)
+
 
     return frame
