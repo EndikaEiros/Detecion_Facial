@@ -210,11 +210,10 @@ if task == 'train':
         
         # Optimizando el modelo
         print(f'Optimizando el modelo')
-        corr_threshold = 0.6
+        corr_threshold = 0
                
         mapeo = {}
         for i, nombre in enumerate(landmarks_df['Etiqueta'].unique()):
-            print(i)
             mapeo.update({nombre:i})
         
         train_df_num = landmarks_df.copy()
@@ -224,11 +223,9 @@ if task == 'train':
         corr_df.reset_index(inplace=True)
         corr_df = corr_df.rename({'index': 'Puntos', 'Etiqueta': 'Correlacion'}, axis=1)
 
-        corr_df.loc[(corr_df['Correlacion'] >= corr_threshold)]
-        # headers_max_corr = list(corr_df.loc[(corr_df['Correlacion'] >= corr_threshold) & (corr_df['Puntos'] != 'Etiqueta')]['Puntos'])
-        headers_max_corr = list(corr_df.loc[corr_df['Correlacion'] >= corr_threshold]['Puntos'])
+        headers_max_corr = list(corr_df.loc[(abs(corr_df['Correlacion']) >= corr_threshold)]['Puntos'])
         
-        print(f'El modelo ha pasado de utilziar {len(headers)-1} puntos de referencias faciales a utilziar {len(headers_max_corr)} puntos')
+        print(f'\nEl modelo ha pasado de utilziar {len(headers)-1} puntos de referencias faciales a utilziar {len(headers_max_corr)} puntos')
 
 
         #### PROVISIONAL #### Entrenar varios modelos
@@ -285,16 +282,16 @@ elif task == 'test':
                 landmarks =  Data.generate_data_as_landmarks(f'data/test/{video}', video.split('.')[0])
                 test_data += [elem for elem in landmarks]
     
-        landmarks_test_df = pd.DataFrame(test_data, columns=f_names)
+        landmarks_test_df = pd.DataFrame(test_data, columns=headers)
 
         X_test = landmarks_test_df.drop(['Etiqueta'], axis=1)
         y_test = landmarks_test_df['Etiqueta']
 
         mlp_model = Model.load_model("models/mlp_v3.model")
-        print(f" MultiLayer Perceptron - Accuracy: {mlp_model.score(X_test, y_test)}")
+        print(f" MultiLayer Perceptron - Accuracy: {mlp_model.score(X_test[f_names], y_test)}")
 
         lr_model = Model.load_model("models/lr_v3.model")
-        print(f" Logistic Regression   - Accuracy: {lr_model.score(X_test, y_test)}")
+        print(f" Logistic Regression   - Accuracy: {lr_model.score(X_test[f_names], y_test)}")
 
         ########################################
 
