@@ -113,6 +113,8 @@ def version3(model, realtime=True):
 
     success, frame = cap.read()
 
+    f_names = model.feature_names[:-1]
+
     while success:
 
         frame = imutils.resize(frame, width=640)
@@ -123,11 +125,12 @@ def version3(model, realtime=True):
             
             df = pd.DataFrame([face], columns=headers[:-1])
             
-            probs = model.predict_proba(df)
+            probs = model.predict_proba(df[f_names])
+
             # El buffer no lo pusheo, creo que es mejor bajar el nivel de confianza un poco para que no se vuelva loco
 
             if any(prob > 0.8 for prob in probs[0]):
-                name = model.predict(df)
+                name = model.predict(df[f_names])
             else:
                 name = ['Desconocido']
 
@@ -199,9 +202,34 @@ if task == 'train':
             print(f"Analizando {video}")
             landmarks =  Data.generate_data_as_landmarks(f'data/train/{video}', video.split('.')[0])
             data += [elem for elem in landmarks]
-    
+
+        # Este csv contiene TODAS las distancias entre puntos, 2278
         landmarks_df = pd.DataFrame(data, columns=headers)
         # landmarks_df.to_csv(f'train.csv')
+
+        
+        # Optimizando el modelo
+        print(f'Optimizando el modelo')
+        corr_threshold = 0.6
+               
+        mapeo = {}
+        for i, nombre in enumerate(landmarks_df['Etiqueta'].unique()):
+            print(i)
+            mapeo.update({nombre:i})
+        
+        train_df_num = landmarks_df.copy()
+        train_df_num['Etiqueta'] = landmarks_df['Etiqueta'].map(mapeo)
+
+        corr_df = pd.DataFrame(data=train_df_num.corr()['Etiqueta'])
+        corr_df.reset_index(inplace=True)
+        corr_df = corr_df.rename({'index': 'Puntos', 'Etiqueta': 'Correlacion'}, axis=1)
+
+        corr_df.loc[(corr_df['Correlacion'] >= corr_threshold)]
+        # headers_max_corr = list(corr_df.loc[(corr_df['Correlacion'] >= corr_threshold) & (corr_df['Puntos'] != 'Etiqueta')]['Puntos'])
+        headers_max_corr = list(corr_df.loc[corr_df['Correlacion'] >= corr_threshold]['Puntos'])
+        
+        print(f'El modelo ha pasado de utilziar {len(headers)-1} puntos de referencias faciales a utilziar {len(headers_max_corr)} puntos')
+
 
         #### PROVISIONAL #### Entrenar varios modelos
 
@@ -210,11 +238,13 @@ if task == 'train':
         # Model.save_model(landmarks_model, 'v3')
 
         print(f"Entrenando MLP")
-        landmarks_model = Model.train_model_df(landmarks_df, mlp_model)
+        landmarks_model = Model.train_model_df(landmarks_df[headers_max_corr], mlp_model)
+        landmarks_model.feature_names = headers_max_corr
         Model.save_model(landmarks_model, 'mlp_v3')
 
         print(f"Entrenando LR")
-        landmarks_model = Model.train_model_df(landmarks_df, lr_model)
+        landmarks_model = Model.train_model_df(landmarks_df[headers_max_corr], lr_model)
+        landmarks_model.feature_names = headers_max_corr
         Model.save_model(landmarks_model, 'lr_v3')
 
         #############################################
@@ -237,11 +267,13 @@ elif task == 'test':
         try:
             model = Model.load_model("models/lr_v3.model")
             
+            
         except:
             print("Es necesario entrenar un modelo primero")
             exit(1)
 
-        version3(Model.load_model("models/lr_v3.model"), realtime=True)
+        version3(Model.load_model("models/lr_v3.model"), realtime=False)
+        f_names = model.feature_names[:-1]
 
         #### PROVISIONAL #### Obtener métricas
 
@@ -253,7 +285,7 @@ elif task == 'test':
                 landmarks =  Data.generate_data_as_landmarks(f'data/test/{video}', video.split('.')[0])
                 test_data += [elem for elem in landmarks]
     
-        landmarks_test_df = pd.DataFrame(test_data, columns=headers)
+        landmarks_test_df = pd.DataFrame(test_data, columns=f_names)
 
         X_test = landmarks_test_df.drop(['Etiqueta'], axis=1)
         y_test = landmarks_test_df['Etiqueta']
