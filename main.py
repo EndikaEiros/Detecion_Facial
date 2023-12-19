@@ -225,12 +225,12 @@ if task == 'train':
 
         headers_max_corr = list(corr_df.loc[(abs(corr_df['Correlacion']) >= corr_threshold)]['Puntos'])
         
-        print(f'\nEl modelo ha pasado de utilziar {len(headers)-1} puntos de referencias faciales a utilziar {len(headers_max_corr)} puntos')
+        print(f'\nEl modelo ha pasado de utilziar {len(headers)-1} puntos de referencias faciales a utilziar {len(headers_max_corr)-1} puntos')
 
 
         #### PROVISIONAL #### Entrenar varios modelos
 
-        print(f"Entrenando MLP")
+        #print(f"Entrenando MLP")
         # landmarks_model = Model.train_model_df(landmarks_df, model)
         # Model.save_model(landmarks_model, 'v3')
 
@@ -269,7 +269,7 @@ elif task == 'test':
             print("Es necesario entrenar un modelo primero")
             exit(1)
 
-        version3(Model.load_model("models/lr_v3.model"), realtime=False)
+        version3(Model.load_model("models/lr_v3.model"), realtime=True)
         f_names = model.feature_names[:-1]
 
         #### PROVISIONAL #### Obtener métricas
@@ -304,7 +304,7 @@ elif task == 'example':
         version2(Model.load_model("models/example_v2.model"), realtime=False)
 
     elif version == 'v3':
-        version3(Model.load_model("models/example_v3.model"), realtime=False)
+        version3(Model.load_model("models/example_v3.model"), realtime=True)
 
     else:
         version1(realtime=False)

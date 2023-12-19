@@ -169,10 +169,10 @@ def draw_landmarks(frame, face_shape, square , name):
         start_point = (face_shape[a][0], face_shape[int(a)][1])
         end_point = (face_shape[int(b)][0], face_shape[int(b)][1])
 
-        frame = cv2.line(frame, start_point, end_point, (0, 255, 155) , 1)
+        frame = cv2.line(frame, start_point, end_point, (255, 255, 150) , 1)
     
     x, y, h, w = square
-    cv2.putText(frame, name, (x, y - 20), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 155), 1, cv2.LINE_AA)
+    cv2.putText(frame, name, (x, y - 20), cv2.FONT_HERSHEY_PLAIN, 2, (255, 255, 150), 1, cv2.LINE_AA)
 
 
     return frame
