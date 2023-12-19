@@ -3,8 +3,8 @@
 ## Versiones:
 
 - Versión 1: Únicamente se realiza la detección de los rostros en tiempo real.
-- Versión 2: Se realiza la detecciión e identificación si preprocesar las imágenes.
-- Versión 3: Se realiza la detecciión e identificación si preprocesando las imágenes.
+- Versión 2: Se realiza la detección e identificación sin preprocesar las imágenes.
+- Versión 3: Se realiza la detección e identificación obteniendo las distancias apropiadas del rostro.
 
 ## Modo de uso:
 
@@ -24,7 +24,7 @@
 
 ### Entrenar modelo nuevo con nuevos rostros
 1. Introducir en el directorio 'data/train/' los vídeos de las personas que se desean detectar. Es necesario que el nombre del video lleve el nombre de la persona. (Ejemplo: Pedro.MOV, Maria.mp4, etc.)
-2. Ejecutar siguiente línea recolectar los datos de los vídeos generando un nuevo dataset y entrenar el mejor modelo (seleccionar version):
+2. Ejecutar siguiente línea para recolectar los datos de los vídeos generando un nuevo dataset y entrenar el mejor modelo (seleccionar version):
     ```
     python3 main.py train v2
    ```
@@ -44,16 +44,16 @@
    ```
     python3 main.py test v3
     ```
-   (para las versiones 2 y 3 es necesario haber preentrenado un modelo nuevo con el comando anterior)
+   (para las versiones 2 y 3 es necesario haber preentrenado un modelo nuevo con el comando 'train')
 
 ## Estructura del código
 
 - Directorio data/: Contiene los datos con los que entrenar o probar el modelo.
-  - data/videos/: Vídeos de las personas para el entrenamiento.
-  - data/example/: Ejemplo de un vídeo de prueba.
-- Directorio models/: Contiene los modelos entreandos.
+  - data/train/: Vídeos de las personas para el entrenamiento.
+  - data/test/: Video sobre el que testear si no se desea hacerlo en tiempo real. (EXAMPLE.MOV)
+- Directorio models/: Contiene los modelos entrenados. (detector de landmarks, v2 y v3)
 - Directorio scipts/: Contiene el código.
-  - Data.py: Realiza funciones relacionadas con los datos (recolectar datasets de los vídeos).
-  - Recognition.py: Extrae información de las imágenes (landmarks, rostros girados, etc.).
+  - Data.py: Realiza funciones relacionadas con las imágenes (recolectar datos de entrenamiento)
+  - Recognition.py: Extrae información de las imágenes (detección de rostros, de landmarks, dibujado sobre la imagen, etc.).
   - Model.py: Realiza funciones relacionas con los modelos (entrenar, evaluar, cargar, guardar, etc.).
-  - <Nombre>.ipynb: Preprocesado de los datos realizado (Machine Learning).
+  - ML-dist_optimization.ipynb: Preprocesado de los datos realizado para la optimizción del dataset (Machine Learning).
