@@ -29,7 +29,7 @@ def generate_data_as_images(video_path, person_name, images_path):
     # Obtener primer frame
     success, frame = cap.read()
 
-    print(f"\n Saving {person_name}'s faces...\n")
+    print(f" Almacenando caras de {person_name}...")
 
     # Por cada frame del video
     while success:
@@ -55,8 +55,8 @@ def generate_data_as_images(video_path, person_name, images_path):
 
         # Obtener siguiente frame
         success, frame = cap.read()
-
-    print(f'{image_num} imágenes de {person_name} obtenidas para el entrenamiento')
+    print(" ✓")
+    print(f' {image_num} imágenes de {person_name} obtenidas para el entrenamiento')
     cap.release()
 
 def generate_data_as_landmarks(video_path, person_name, headers):
