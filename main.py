@@ -23,6 +23,7 @@ with open('data/headers.json', 'r', encoding='utf-8') as file:
 
 """ Ejecutar versión 1 """
 
+
 def version1(realtime=True):
     """
     Esta versión únicamente detecta rostros en tiempo real
@@ -54,7 +55,9 @@ def version1(realtime=True):
 
     cap.release()
 
+
 """ Ejecutar versión 2 """
+
 
 def version2(model, realtime=True):
     """
@@ -79,11 +82,13 @@ def version2(model, realtime=True):
 
         # Por cada cara detectada
         for (x, y, w, h) in faces:
-            rostro = frame[y:y+h, x:x+w]
+            rostro = frame[y:y + h, x:x + w]
             rostro = cv2.resize(rostro, (150, 150), interpolation=cv2.INTER_CUBIC)
             probs = model.predict_proba(rostro.reshape(1, -1))
-            if any(prob > 0.8 for prob in probs[0]): name = Model.predict_one(model, rostro)
-            else: name = ['Desconocido']
+            if any(prob > 0.95 for prob in probs[0]):
+                name = Model.predict_one(model, rostro)
+            else:
+                name = ['Desconocido']
             frame = Recognition.draw_square(frame=frame, x=x, y=y, w=w, h=h, name=name[0])
 
         cv2.imshow('frame', frame)
@@ -98,7 +103,9 @@ def version2(model, realtime=True):
     cap.release()
     cv2.destroyAllWindows()
 
+
 """ Ejecutar versión 3 """
+
 
 def version3(model, realtime=True):
     """
@@ -130,22 +137,22 @@ def version3(model, realtime=True):
 
         # Por cada cara detectada
         for face, square, shape in zip(faces, squares, shapes):
-            
+
             df = pd.DataFrame([face], columns=f_names)
-            
+
             probs = model.predict_proba(df)
 
-            if any(prob > 0.8 for prob in probs[0]):
+            if any(prob > 0.95 for prob in probs[0]):
                 name = model.predict(df)
             else:
                 name = ['Desconocido']
 
-            frame = Recognition.draw_landmarks(frame= frame, face_shape= shape, square=square ,name=name[0])
-        
+            frame = Recognition.draw_landmarks(frame=frame, face_shape=shape, square=square, name=name[0])
+
         cv2.imshow('frame', frame)
 
         success, frame = cap.read()
-        
+
         k = cv2.waitKey(1)
 
         if k == 27:
@@ -153,6 +160,7 @@ def version3(model, realtime=True):
 
     cap.release()
     cv2.destroyAllWindows()
+
 
 ################## PARAMETERS ##################
 
@@ -165,32 +173,31 @@ except:
     task = ''
     version = 'v1'
 
-#----------------------------------------------#
-#------------------- TRAIN --------------------#
-#----------------------------------------------#
+# ----------------------------------------------#
+# ------------------- TRAIN --------------------#
+# ----------------------------------------------#
 
 if task == 'train':
 
     videos = os.listdir('data/train')
     if len(videos) == 0:
         print(" No hay vídeos para el entrenamiento:\n"
-            " - Introducir vídeos en 'data/train'\n"
-            " - El nombre de los vídeos deben ser el nombre de la persona que sale en él\n"
-            "    (Ejemplo: Pedro.MOV, Maria.mp4, etc.)\n")
+              " - Introducir vídeos en 'data/train'\n"
+              " - El nombre de los vídeos deben ser el nombre de la persona que sale en él\n"
+              "    (Ejemplo: Pedro.MOV, Maria.mp4, etc.)\n")
         exit(1)
-    
+
     ###### TRAIN v1 ######
     if version == 'v1':
-
-        print("La versión 1 no requiere entrenamiento")
+        print(" La versión 1 no requiere entrenamiento")
         exit(1)
 
     ###### TRAIN v2 ######
     if version == 'v2':
 
         model = MLPClassifier(hidden_layer_sizes=[20, 40], activation='relu', early_stopping=True,
-        random_state=13, max_iter=10000, solver='adam', verbose=False)
-        
+                              random_state=13, max_iter=10000, solver='adam', verbose=False)
+
         for video in videos:
             Data.generate_data_as_images(f'data/train/{video}', video.split('.')[0], 'data/train_images')
 
@@ -210,19 +217,19 @@ if task == 'train':
 
         for video in videos:
             print(f" Almacenando cara de {video.split('.')[0]}...", end="")
-            landmarks =  Data.generate_data_as_landmarks(f'data/train/{video}', video.split('.')[0], headers)
+            landmarks = Data.generate_data_as_landmarks(f'data/train/{video}', video.split('.')[0], headers)
             data += [elem for elem in landmarks]
             print(" ✓")
         landmarks_df = pd.DataFrame(data, columns=headers)
         # landmarks_df.to_csv(f'train.csv') # if want to save dataset
 
         ### OPTIMIZAR DISTANCIAS ###
-               
+
         mapeo = {}
         print(f' Optimizando el dataset...', end="")
         for i, nombre in enumerate(landmarks_df['Etiqueta'].unique()):
-            mapeo.update({nombre:i})
-        
+            mapeo.update({nombre: i})
+
         train_df_num = landmarks_df.copy()
         train_df_num['Etiqueta'] = landmarks_df['Etiqueta'].map(mapeo)
 
@@ -232,8 +239,7 @@ if task == 'train':
 
         headers_max_corr = list(corr_df.loc[(abs(corr_df['Correlacion']) >= CORRELATION_THRESHOLD)]['Puntos'])
         print(" ✓")
-        print(f'--> El número de columnas se ha reducido de {len(headers)-1} a {len(headers_max_corr)-1}')
-
+        print(f'--> El número de columnas se ha reducido de {len(headers) - 1} a {len(headers_max_corr) - 1}')
 
         ### ENTRENAR MODELO ###
 
@@ -243,9 +249,9 @@ if task == 'train':
         Model.save_model(landmarks_model, 'v3')
         print(" ✓")
 
-#----------------------------------------------#
-#------------------- TEST ---------------------#
-#----------------------------------------------#
+# ----------------------------------------------#
+# ------------------- TEST ---------------------#
+# ----------------------------------------------#
 
 elif task == 'test':
 
@@ -255,31 +261,31 @@ elif task == 'test':
             model = Model.load_model("models/v2.model")
 
         except:
-            print("Es necesario entrenar un modelo primero")
+            print(" Es necesario entrenar un modelo primero")
             exit(1)
 
-        version2(model, realtime=False)
+        version2(model, realtime=True)
 
     ###### TEST v3 ######
     elif version == 'v3':
 
         try:
             model = Model.load_model("models/lr_v3.model")
-            
-            
+
+
         except:
-            print("Es necesario entrenar un modelo primero")
+            print(" Es necesario entrenar un modelo primero")
             exit(1)
 
-        version3(Model.load_model("models/lr_v3.model"), realtime=False)
+        version3(Model.load_model("models/v3.model"), realtime=True)
 
     ###### TEST v1 ######
     else:
         version1(realtime=False)
 
-#------------------------------------------------#
-#-------------------- EXAMPLE -------------------#
-#------------------------------------------------#
+# ------------------------------------------------#
+# -------------------- EXAMPLE -------------------#
+# ------------------------------------------------#
 
 elif task == 'example':
 
@@ -289,7 +295,7 @@ elif task == 'example':
 
     ###### EXAMPLE v3 ######
     elif version == 'v3':
-        version3(Model.load_model("models/example_v3.model"), realtime=True)
+        version3(Model.load_model("models/example_v3.model"), realtime=False)
 
     ###### EXAMPLE v1 ######
     else:
