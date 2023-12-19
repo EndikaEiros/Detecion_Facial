@@ -114,7 +114,6 @@ def version3(model, realtime=True):
     success, frame = cap.read()
 
     f_names = model.feature_names[:-1]
-    print(f_names)
 
     while success:
 
