@@ -29,7 +29,7 @@ def generate_data_as_images(video_path, person_name, images_path):
     # Obtener primer frame
     success, frame = cap.read()
 
-    print(f" Almacenando caras de {person_name}...")
+    print(f" Almacenando caras de {person_name}...", end="")
 
     # Por cada frame del video
     while success:

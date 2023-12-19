@@ -32,8 +32,11 @@ def version1(realtime=True):
     if realtime:
         cap = cv2.VideoCapture(0)
     else:
-        cap = cv2.VideoCapture('data/test/EXAMPLE.MOV')
-        exit(1)
+        try:
+            cap = cv2.VideoCapture('data/test/EXAMPLE.MOV')
+        except:
+            print(" Error al abrir el vídeo, comprueba que exista data/test/EXAMPLE.MOV")
+            exit(1)
 
     success, frame = cap.read()
     while success:
@@ -302,4 +305,4 @@ elif task == 'example':
         version1(realtime=False)
 
 else:
-    print("Especificar tarea (train / test / example)")
+    print("Especificar tarea (train / test / example) y version (v1 / v2 / v3)")
