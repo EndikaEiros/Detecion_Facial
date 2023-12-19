@@ -114,23 +114,24 @@ def version3(model, realtime=True):
     success, frame = cap.read()
 
     f_names = model.feature_names[:-1]
+    print(f_names)
 
     while success:
 
         frame = imutils.resize(frame, width=640)
-        faces, squares, shapes = Recognition.get_distances(frame, detector, predictor)
+        faces, squares, shapes = Recognition.get_distances(frame, detector, predictor, f_names)
 
         # Por cada cara detectada
         for face, square, shape in zip(faces, squares, shapes):
             
-            df = pd.DataFrame([face], columns=headers[:-1])
+            df = pd.DataFrame([face], columns=f_names)
             
-            probs = model.predict_proba(df[f_names])
+            probs = model.predict_proba(df)
 
             # El buffer no lo pusheo, creo que es mejor bajar el nivel de confianza un poco para que no se vuelva loco
 
             if any(prob > 0.8 for prob in probs[0]):
-                name = model.predict(df[f_names])
+                name = model.predict(df)
             else:
                 name = ['Desconocido']
 
@@ -200,7 +201,7 @@ if task == 'train':
         data = []
         for video in videos:
             print(f"Analizando {video}")
-            landmarks =  Data.generate_data_as_landmarks(f'data/train/{video}', video.split('.')[0])
+            landmarks =  Data.generate_data_as_landmarks(f'data/train/{video}', video.split('.')[0], headers)
             data += [elem for elem in landmarks]
 
         # Este csv contiene TODAS las distancias entre puntos, 2278
@@ -210,7 +211,7 @@ if task == 'train':
         
         # Optimizando el modelo
         print(f'Optimizando el modelo')
-        corr_threshold = 0
+        corr_threshold = 0.6
                
         mapeo = {}
         for i, nombre in enumerate(landmarks_df['Etiqueta'].unique()):
@@ -269,31 +270,8 @@ elif task == 'test':
             print("Es necesario entrenar un modelo primero")
             exit(1)
 
-        version3(Model.load_model("models/lr_v3.model"), realtime=True)
-        f_names = model.feature_names[:-1]
+        version3(Model.load_model("models/lr_v3.model"), realtime=False)
 
-        #### PROVISIONAL #### Obtener métricas
-
-        print("\n Calculando métricas...\n")
-        videos = os.listdir('data/test')
-        test_data = []
-        for video in videos:
-            if 'TEST' in video:
-                landmarks =  Data.generate_data_as_landmarks(f'data/test/{video}', video.split('.')[0])
-                test_data += [elem for elem in landmarks]
-    
-        landmarks_test_df = pd.DataFrame(test_data, columns=headers)
-
-        X_test = landmarks_test_df.drop(['Etiqueta'], axis=1)
-        y_test = landmarks_test_df['Etiqueta']
-
-        mlp_model = Model.load_model("models/mlp_v3.model")
-        print(f" MultiLayer Perceptron - Accuracy: {mlp_model.score(X_test[f_names], y_test)}")
-
-        lr_model = Model.load_model("models/lr_v3.model")
-        print(f" Logistic Regression   - Accuracy: {lr_model.score(X_test[f_names], y_test)}")
-
-        ########################################
 
     else:
         version1(realtime=False)

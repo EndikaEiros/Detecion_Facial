@@ -82,13 +82,10 @@ def get_faces(frame, angles=None):
 
 """ Obtiene los datos de la imagen (distancias y colores) """
 
-def get_distances(frame, detector, predictor):
+def get_distances(frame, detector, predictor, headers):
    
     data = []
     all_squares = []
-
-    # Preprocesar frame y obtener caras detectadas
-    #frame = imutils.resize(frame, width=640)
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -102,7 +99,7 @@ def get_distances(frame, detector, predictor):
         shape = imutils.face_utils.shape_to_np(shape)
 
         shapes.append(shape)
-        data.append(Data.generate_dist_from_frame(shape, frame))
+        data.append(Data.generate_dist_from_frame(shape, headers))
 
         # Get square coords
         all_squares.append([shape[0][0], shape[23][1], shape[16][0]-shape[0][0], shape[8][1]-shape[23][1]])
