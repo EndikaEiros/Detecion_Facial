@@ -2,9 +2,14 @@
 
 ## Versiones:
 
-- Versión 1: Únicamente se realiza la detección de los rostros. (Haarcascade)
-- Versión 2: Se realiza la detección e identificación de rostros sin preprocesar las imágenes. (Haarcascade + Multi-Layer Perceptron)
-- Versión 3: Se realiza la detección e identificación de rostros obteniendo las distancias apropiadas del rostro. (DLIB + Logistic Regression)
+- Versión 1: Únicamente se realiza la detección de los rostros.
+  (Haarcascade)
+  
+- Versión 2: Se realiza la detección e identificación de rostros sin preprocesar las imágenes.
+  (Haarcascade + Multi-Layer Perceptron)
+  
+- Versión 3: Se realiza la detección e identificación de rostros obteniendo las distancias apropiadas del rostro.
+  (DLIB + Logistic Regression)
 
 ## Modo de uso:
 
