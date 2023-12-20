@@ -273,7 +273,7 @@ elif task == 'test':
     elif version == 'v3':
 
         try:
-            model = Model.load_model("models/lr_v3.model")
+            model = Model.load_model("models/v3.model")
 
 
         except:
