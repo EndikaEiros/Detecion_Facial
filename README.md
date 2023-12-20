@@ -2,9 +2,9 @@
 
 ## Versiones:
 
-- Versión 1: Únicamente se realiza la detección de los rostros en tiempo real.
-- Versión 2: Se realiza la detección e identificación sin preprocesar las imágenes.
-- Versión 3: Se realiza la detección e identificación obteniendo las distancias apropiadas del rostro.
+- Versión 1: Únicamente se realiza la detección de los rostros. (Haarcascade)
+- Versión 2: Se realiza la detección e identificación de rostros sin preprocesar las imágenes. (Haarcascade + Multi-Layer Perceptron)
+- Versión 3: Se realiza la detección e identificación de rostros obteniendo las distancias apropiadas del rostro. (DLIB + Logistic Regression)
 
 ## Modo de uso:
 
@@ -51,9 +51,9 @@
 - Directorio data/: Contiene los datos con los que entrenar o probar el modelo.
   - data/train/: Vídeos de las personas para el entrenamiento.
   - data/test/: Video sobre el que testear si no se desea hacerlo en tiempo real. (EXAMPLE.MOV)
-- Directorio models/: Contiene los modelos entrenados. (detector de landmarks, v2 y v3)
+- Directorio models/: Contiene los modelos entrenados. (detector de landmarks, v2, v3 y examples)
 - Directorio scipts/: Contiene el código.
-  - Data.py: Realiza funciones relacionadas con las imágenes (recolectar datos de entrenamiento)
+  - Data.py: Realiza funciones relacionadas con las imágenes (recolectar datos de entrenamiento con Haarcarsade o DLIB)
   - Recognition.py: Extrae información de las imágenes (detección de rostros, de landmarks, dibujado sobre la imagen, etc.).
-  - Model.py: Realiza funciones relacionas con los modelos (entrenar, evaluar, cargar, guardar, etc.).
-  - ML-dist_optimization.ipynb: Preprocesado de los datos realizado para la optimizción del dataset (Machine Learning).
+  - Model.py: Realiza funciones relacionas con los clasificadores (entrenar, evaluar, cargar, guardar, etc.).
+  - ML-dist_optimization.ipynb: Ejemplo del preprocesado realizado para la optimizción del dataset (Machine Learning).
